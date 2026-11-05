@@ -16,7 +16,7 @@ ASSET_TYPE = "hsimrcl::simready_asset::" + HDA_VERSION
 
 # сторонних модулей в vendor/ нет: USD (pxr) берём из Houdini, сеть — urllib из стандартной библиотеки
 VENDOR = {}
-HOUDINI_TESTED = "22.0.429"
+HOUDINI_TESTED = "22.0.466"
 PYTHON_TESTED = "3.13"
 # коммит SimRCL, с которого перенесено ядро (core/*.py); при переносе обновлений менять вместе с заголовками файлов
 SIMRCL_UPSTREAM = "1150d3e"

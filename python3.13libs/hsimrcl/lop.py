@@ -16,6 +16,9 @@ from .core import simready_agent as agent
 from .core import simready_catalog as catalog
 from .core import simready_client as client
 from .core import simready_settings as settings
+from .net import ensure_tls
+
+ensure_tls()  # до первого запроса к каталогу: у Python Houdini на macOS нет своих корневых сертификатов
 
 ROOT_PRIM = "/simready"
 MAX_RESULTS = 40
@@ -80,19 +83,68 @@ def cook(node):
         raise hou.NodeError("The file has no default prim to reference: %s" % path)
     prim = UsdGeom.Xform.Define(stage, Sdf.Path(target_path(hda, path))).GetPrim()
     prim.GetReferences().AddReference(path)
-    _place(UsdGeom.Xformable(prim), hda, asset_up, asset_mpu, stage)
+    correction = _place(UsdGeom.Xformable(prim), hda, asset_up, asset_mpu, stage)
+    skipped = rebase_resets(stage, prim, correction)
     _tag(prim, hda)
+    if skipped:
+        node.addWarning("Parts keep a world transform and ignore the up-axis/units correction "
+                        "(inside instances or animated): " + ", ".join(skipped[:5]))
 
 
 def _place(xformable, hda, asset_up, asset_mpu, stage):
-    """Поворот и масштаб пишем отдельными xformOp'ами, чтобы их было видно и можно было отключить."""
-    from pxr import UsdGeom
+    """Поворот и масштаб — отдельными xformOp'ами ПЕРЕД собственными операциями корня ассета.
+
+    Возвращает матрицу T, переводящую мировые координаты файла ассета в мировые координаты сцены
+    (local_root = Orig * S * R, значит world_сцены(x) = world_ассета(x) * S * R * W(родителя корня)).
+    """
+    from pxr import Gf, UsdGeom
     angle = up_rotation(asset_up, str(UsdGeom.GetStageUpAxis(stage))) if hda.evalParm("yup") else 0.0
     scale = unit_scale(asset_mpu, UsdGeom.GetStageMetersPerUnit(stage)) if hda.evalParm("units") else 1.0
+    # собственные операции корня из файла: если записать порядок только из наших, они бы пропали
+    own = xformable.GetOrderedXformOps()
+    reset = xformable.GetResetXformStack()
+    ours = []
     if angle:
-        xformable.AddRotateXOp(opSuffix="simready_up").Set(angle)
+        ours.append(xformable.AddRotateXOp(opSuffix="simready_up"))
+        ours[-1].Set(angle)
     if abs(scale - 1.0) > 1e-9:
-        xformable.AddScaleOp(opSuffix="simready_units").Set((scale, scale, scale))
+        ours.append(xformable.AddScaleOp(opSuffix="simready_units"))
+        ours[-1].Set(Gf.Vec3f(scale, scale, scale))
+    if ours:
+        xformable.SetXformOpOrder(ours + own, reset)
+    return _ops_matrix(ours) * UsdGeom.XformCache().GetLocalToWorldTransform(xformable.GetPrim().GetParent())
+
+
+def _ops_matrix(ops):
+    """Матрица списка операций в порядке xformOpOrder: [A, B] -> B * A."""
+    from pxr import Gf, Usd
+    matrix = Gf.Matrix4d(1.0)
+    for op in ops:
+        matrix = op.GetOpTransform(Usd.TimeCode.Default()) * matrix
+    return matrix
+
+
+def rebase_resets(stage, root, correction):
+    """Части с !resetXformStack! (ForgeCAD пишет так мировую позу тела: xformOp:transform:simulationWorld)
+    игнорируют трансформы предков — и наш поворот/масштаб, и перенос ассета пользователем. Переводим их позу
+    в локальную относительно родителя: L = M * T * inverse(World_сцены(родителя)); в координатах файла поза
+    не меняется. Идём сверху вниз, чтобы родитель был уже исправлен. Возвращает пропущенные пути.
+    """
+    from pxr import Usd, UsdGeom
+    skipped = []
+    targets = [p for p in Usd.PrimRange(root, Usd.TraverseInstanceProxies())
+               if p != root and p.IsA(UsdGeom.Xformable) and UsdGeom.Xformable(p).GetResetXformStack()]
+    for prim in sorted(targets, key=lambda p: p.GetPath().pathElementCount):
+        xformable = UsdGeom.Xformable(prim)
+        if prim.IsInstanceProxy() or xformable.TransformMightBeTimeVarying():
+            skipped.append(str(prim.GetPath()))
+            continue
+        world_asset = xformable.GetLocalTransformation(Usd.TimeCode.Default())
+        parent_world = UsdGeom.XformCache().GetLocalToWorldTransform(prim.GetParent())
+        local = world_asset * correction * parent_world.GetInverse()
+        xformable.ClearXformOpOrder()
+        xformable.AddTransformOp(opSuffix="simready_local").Set(local)
+    return skipped
 
 
 def _tag(prim, hda):

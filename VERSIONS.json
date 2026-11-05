@@ -7,7 +7,7 @@
       "plugin": "0.1.0.dev1",
       "vendor": {},
       "simrcl_upstream": "1150d3e",
-      "houdini": "22.0.429",
+      "houdini": "22.0.466",
       "python": "3.13",
       "assets": ["hsimrcl_simready_asset_1.0.hda"]
     }
