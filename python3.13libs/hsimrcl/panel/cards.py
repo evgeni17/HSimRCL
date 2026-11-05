@@ -97,7 +97,7 @@ class TileDelegate(QtWidgets.QStyledItemDelegate):
         painter.restore()
 
     def _image(self, painter, image, card):
-        pixmap = self.owner.pixmaps.get(media.media_url(card, media.TILE))
+        pixmap = self.owner.tile_pixmap(media.media_url(card, media.TILE))
         if pixmap is None or pixmap.isNull():
             painter.fillRect(image, QtGui.QColor(45, 45, 45))
             return

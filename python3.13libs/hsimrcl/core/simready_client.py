@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Dead_wall
-# SPDX-FileCopyrightText: 2026 EOK (Houdini port: package-relative imports)
+# SPDX-FileCopyrightText: 2026 EOK (Houdini port: package-relative imports; HSimRCL: safe path segments,
+#   completion marker only with the root USD on disk — marked "HSimRCL:" below)
 # SPDX-License-Identifier: MIT
 # Upstream: https://github.com/denwerdan-arch/SimRCL simready_lib/simready_client.py @ 1150d3e
 """HTTP client for SimReady Central: search the index and download asset packages.
@@ -65,7 +66,16 @@ def parse_hf_path(path):
     parts = rest.split("/")
     if len(parts) < 3:
         return None
+    # HSimRCL: репозиторий, коммит и пакет становятся папками загрузки — ".." или пустой сегмент вывел бы
+    # пакет за её пределы (путь приходит от стороннего сервиса)
+    if not all(_safe_segment(segment) for segment in repo.split("/") + parts[:2]):
+        return None
     return {"repo": repo, "commit": parts[0], "package": parts[1], "rel": "/".join(parts[2:])}
+
+
+def _safe_segment(segment):
+    """HSimRCL: имя папки без перехода по дереву и без разделителей Windows."""
+    return segment not in ("", ".", "..") and "\\" not in segment and ":" not in segment
 
 
 def _is_entry_point(rel):
@@ -287,7 +297,9 @@ def package_root(asset, cache_dir):
 
 def is_cached(asset, cache_dir):
     """True when the whole package was downloaded earlier (the marker is written only after the last file)."""
-    return os.path.isfile(os.path.join(package_root(asset, cache_dir), COMPLETE_MARKER))
+    root_usd = cached_root_usd(asset, cache_dir)  # HSimRCL: маркер без корневого USD не считается скачанным пакетом
+    return os.path.isfile(os.path.join(package_root(asset, cache_dir), COMPLETE_MARKER)) and bool(root_usd) \
+        and os.path.isfile(root_usd)
 
 
 def cached_root_usd(asset, cache_dir):
@@ -315,5 +327,8 @@ def download_package(asset, cache_dir, progress=None, force=False):
             job.result()  # re-raises the first download error
             if progress:
                 progress(done, len(files))
+    root_usd = _safe_join(root, asset["ref"]["rel"])
+    if not root_usd or not os.path.isfile(root_usd):  # HSimRCL: манифест без корневого USD — пакет не готов
+        raise OSError("the package has no root USD file: %s" % asset["ref"]["rel"])
     open(marker, "w").close()
-    return _safe_join(root, asset["ref"]["rel"])
+    return root_usd

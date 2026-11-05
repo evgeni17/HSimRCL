@@ -65,8 +65,100 @@ def test_lop_helpers():
     check("units missing", lop.unit_scale(0, 1.0), 1.0)
 
 
+class _Parm:
+    def __init__(self, store, name):
+        self.store, self.name = store, name
+
+    def set(self, value):
+        self.store[self.name] = value
+
+
+class _Node:
+    """Нода-заглушка: parm(name).set(...) и evalParm(name)."""
+
+    def __init__(self):
+        self.values = {}
+
+    def parm(self, name):
+        return _Parm(self.values, name)
+
+    def evalParm(self, name):
+        return self.values.get(name, "")
+
+
+def _card(name, license=None):
+    ref = {"repo": "org/repo", "commit": "0123456789abcdef", "package": name, "rel": "simready_usd/%s.usd" % name}
+    asset = {"path": "hf://huggingface.co/datasets/org/repo/resolve/0123456789abcdef/%s/simready_usd/%s.usd" % (name, name),
+             "name": name + ".usd", "ref": ref}
+    return {"asset": asset, "filename": name + ".usd", "title": name.title(), "license": license, "vlm": {}}
+
+
+def test_choose_switch():
+    """Смена ассета: файл, лицензия и имя всегда от нового ассета (раньше файл и лицензия оставались от старого)."""
+    lop = _lop()
+    client = lop.client
+    cached = {"chair"}
+    saved = client.is_cached, client.cached_root_usd
+    client.is_cached = lambda asset, folder: asset["ref"]["package"] in cached
+    client.cached_root_usd = lambda asset, folder: "/lib/%s.usd" % asset["ref"]["package"]
+    try:
+        node = _Node()
+        lop._choose(node, _card("chair", "CC-BY-4.0"), "/lib")
+        check("cached: file", node.evalParm("file"), "/lib/chair.usd")
+        check("cached: license from card", node.evalParm("license"), "CC-BY-4.0")
+        lop._choose(node, _card("door"), "/lib")
+        check("not cached: file cleared", node.evalParm("file"), "")
+        check("not cached: license cleared", node.evalParm("license"), "")
+        check("not cached: asset", node.evalParm("asset"), "door.usd")
+    finally:
+        client.is_cached, client.cached_root_usd = saved
+
+
+def test_unsafe_paths():
+    """Сегменты пути ассета с ".." или пустые — не ассет (иначе пакет лёг бы вне папки загрузки)."""
+    from hsimrcl.core import simready_client as client
+    good = "hf://huggingface.co/datasets/org/repo/resolve/0123abcd/chair/simready_usd/chair.usd"
+    check("good path", (client.parse_hf_path(good) or {}).get("package"), "chair")
+    for bad in ("hf://huggingface.co/datasets/org/repo/resolve/../../chair/x.usd",
+                "hf://huggingface.co/datasets/org/repo/resolve/0123abcd/../x.usd",
+                "hf://huggingface.co/datasets/../repo/resolve/0123abcd/chair/x.usd",
+                "hf://huggingface.co/datasets/org//resolve/0123abcd/chair/x.usd"):
+        check("unsafe " + bad.split("/datasets/")[1][:28], client.parse_hf_path(bad), None)
+
+
+def test_marker_needs_root_usd():
+    """Пакет, в манифесте которого нет корневого USD, не помечается скачанным."""
+    import tempfile
+    from hsimrcl.core import simready_client as client
+    asset = {"path": "hf://huggingface.co/datasets/org/repo/resolve/0123abcd/chair/simready_usd/chair.usd",
+             "name": "chair.usd", "ref": client.parse_hf_path(
+                 "hf://huggingface.co/datasets/org/repo/resolve/0123abcd/chair/simready_usd/chair.usd")}
+    saved = client.fetch_manifest, client.select_files, client._download_job
+    client.fetch_manifest = lambda path: {}
+    client.select_files = lambda manifest: [("textures/a.png", 1)]
+    client._download_job = lambda ref, root, rel, size, force=False: None   # ничего не пишет: корневого USD нет
+    folder = tempfile.mkdtemp()
+    try:
+        try:
+            client.download_package(asset, folder)
+            raised = False
+        except OSError:
+            raised = True
+        check("no root USD raises", raised, True)
+        marker = os.path.join(client.package_root(asset, folder), client.COMPLETE_MARKER)
+        check("no completion marker", os.path.exists(marker), False)
+        os.makedirs(os.path.dirname(marker), exist_ok=True)
+        open(marker, "w").close()
+        check("marker alone is not cached", client.is_cached(asset, folder), False)
+    finally:
+        client.fetch_manifest, client.select_files, client._download_job = saved
+        import shutil
+        shutil.rmtree(folder, ignore_errors=True)
+
+
 if __name__ == "__main__":
-    for fn in (test_core_imports, test_no_absolute_sibling_imports, test_settings_paths, test_lop_helpers):
+    for fn in (test_core_imports, test_no_absolute_sibling_imports, test_settings_paths, test_lop_helpers,
+               test_choose_switch, test_unsafe_paths, test_marker_needs_root_usd):
         fn()
     print("test_core: %s" % ("OK" if not FAILS else "FAILED " + ", ".join(FAILS)))
     sys.exit(1 if FAILS else 0)

@@ -26,7 +26,7 @@ def pump(seconds, until=None):
 widget = browser.create()
 widget.resize(1500, 900)
 widget.show()
-ok_catalog = pump(90, lambda: widget.catalog is not None and widget.loaded)
+pump(90, lambda: widget.catalog is not None and widget.loaded)
 print("catalog:", widget.catalog is not None, "cards:", len(widget.loaded), "status:", widget.status_label.text())
 if len(sys.argv) > 2:
     widget.search.setText(sys.argv[2])
@@ -41,3 +41,8 @@ print("pixmaps:", len(widget.pixmaps), "detail:", widget.detail.title.text())
 print("similar:", widget.detail.similar_box.count(), "facts len:", len(widget.detail.facts.text()))
 widget.grab().save(sys.argv[1])
 print("saved", sys.argv[1])
+problems = [text for text, bad in (("catalog not loaded", widget.catalog is None), ("no results", not widget.loaded),
+                                    ("no previews", not widget.pixmaps), ("no details", not widget.detail.title.text()))
+            if bad]
+print("panel_smoke: %s" % ("OK" if not problems else "FAILED " + ", ".join(problems)))
+sys.exit(1 if problems else 0)

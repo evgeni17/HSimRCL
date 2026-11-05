@@ -2,7 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 """Регресс в hython: ассеты из чек-листа SimRCL через ноду simready_asset (нужна сеть или скачанные пакеты).
 
-    hython tests/houdini_regression.py
+    hython tests/houdini_regression.py [--allow-skip]
+
+Пропуск (нет сети и нет пакета на диске, ассета нет в ответе каталога) считается ошибкой: код выхода 0
+должен значить, что все случаи действительно проверены. --allow-skip — для прогона без сети.
 
 Каждый раздел печатает `houdini_regression <раздел>: OK` или `SKIPPED (причина)`.
 Размеры сверяются с каталогом (dims, метры, Z-up файла -> X, Z, Y сцены).
@@ -25,6 +28,9 @@ CASES = {
 }
 
 
+ALLOW_SKIP = "--allow-skip" in sys.argv
+
+
 def bbox_size(node):
     from pxr import Usd, UsdGeom
     stage = node.stage()
@@ -38,7 +44,7 @@ def run_case(name, query, mode, filename, tol):
     card = next((c for c in sr._STATE["cards"] if c["filename"] == filename), None)
     if card is None:
         print("houdini_regression %s: SKIPPED (%s not in the catalog answer)" % (name, filename))
-        return True
+        return ALLOW_SKIP
     folder = settings.download_dir(settings.load())
     if not client.is_cached(card["asset"], folder):
         client.download_package(card["asset"], folder)
@@ -64,6 +70,8 @@ def main():
             ok = run_case(name, *case) and ok
         except OSError as error:  # нет сети и нет пакета на диске
             print("houdini_regression %s: SKIPPED (%s)" % (name, error))
+            ok = ok and ALLOW_SKIP
+    print("houdini_regression: %s" % ("OK" if ok else "FAILED"))
     return 0 if ok else 1
 
 

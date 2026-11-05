@@ -74,6 +74,8 @@ def cook(node):
     hda = node.parent()
     path = hda.evalParm("file").strip()
     if not path:
+        if hda.evalParm("asset").strip():
+            node.addWarning("%s is not downloaded yet: press Download." % hda.evalParm("asset"))
         return
     if not os.path.isfile(path):
         raise hou.NodeError("USD file not found: %s" % path)
@@ -183,15 +185,26 @@ def search(kwargs):
                                    column_header="Asset", width=900, height=600)
     if picked:
         _choose(node, cards[picked[0]], folder)
+        if not node.evalParm("license"):
+            _fill_license(node)
+
+
+def chosen_values(card, folder):
+    """Значения параметров ноды для карточки — все про один и тот же ассет.
+
+    Файл — корневой USD, если пакет скачан, иначе пустая строка: оставить прежний файл нельзя, иначе нода
+    показывала бы старый объект под новым именем. Лицензия — из карточки или пустая (её дозаполнит Download).
+    """
+    cached = client.is_cached(card["asset"], folder)
+    return {"asset": card["filename"], "asset_json": json.dumps(card["asset"], ensure_ascii=False),
+            "title": agent.caption(card), "license": str(card.get("license") or ""),
+            "file": client.cached_root_usd(card["asset"], folder) if cached else ""}
 
 
 def _choose(node, card, folder):
-    """Записать выбранную карточку в параметры; если пакет уже скачан — сразу подставить файл."""
-    node.parm("asset").set(card["filename"])
-    node.parm("asset_json").set(json.dumps(card["asset"], ensure_ascii=False))
-    node.parm("title").set(agent.caption(card))
-    if client.is_cached(card["asset"], folder):
-        node.parm("file").set(client.cached_root_usd(card["asset"], folder))
+    """Записать выбранную карточку в параметры ноды (см. chosen_values)."""
+    for name, value in chosen_values(card, folder).items():
+        node.parm(name).set(value)
 
 
 def download(kwargs):

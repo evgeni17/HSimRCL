@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.1.0-dev.3
+
+Fixes from the external test report of 0.1.0-dev.2:
+
+- **Asset choice is consistent.** Picking another asset sets file, name, package reference and licence together:
+  the USD file is cleared until the new package is downloaded (the node warns "press Download") instead of
+  showing the previous object under the new name; the licence comes from the card or is cleared.
+- Browser: an error of an outdated search or of the asset details no longer stops the current search or
+  overwrites its status (search and detail jobs carry different tokens).
+- Browser: previews come back after being dropped from memory (read from the disk cache while drawing) and
+  after a failed download (retried after a minute); clearing the cache does not mark pending previews as failed.
+- Browser: the Similar list is cleared when another asset is opened.
+- Core (SimRCL files, marked "HSimRCL:"): asset paths with `..` or empty segments are rejected; a package is
+  marked complete only when its root USD is on disk, and a marker alone does not count as downloaded.
+- Tests: `houdini_regression.py` fails on skipped cases unless `--allow-skip`; `panel_smoke.py` exits with 1
+  when the catalog, results, previews or details do not load; new `panel_logic.py` (offline browser logic);
+  `test_core.py` covers asset switching, unsafe paths and the completion marker.
+
 ## 0.1.0-dev.2
 
 - **SimReady Browser** — a Python Panel (pane tab or floating window; shelf tool *SimReady Browser*), the Houdini

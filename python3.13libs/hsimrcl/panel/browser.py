@@ -9,6 +9,7 @@ import os
 import queue
 import re
 import tempfile
+import time
 from collections import OrderedDict
 
 from PySide6 import QtCore, QtGui, QtWidgets
@@ -31,6 +32,7 @@ PIXMAP_LIMIT = 400
 SORT_ALL_LIMIT = 1000   # при сортировке не по релевантности догружаем все страницы, если их не больше
 TIMER_MS = 80
 SCROLL_MARGIN = 400     # px до конца сетки, когда просим следующую страницу
+RETRY_SECONDS = 60      # превью, которое не скачалось, снова просим не раньше чем через минуту
 
 
 class BrowserWidget(QtWidgets.QWidget):
@@ -41,11 +43,15 @@ class BrowserWidget(QtWidgets.QWidget):
         ensure_tls()
         self.events = queue.Queue()
         self.catalog = None
-        self.token = 0              # текущий поиск
-        self.detail_token = 0       # текущая открытая карточка
+        # токены разного вида, чтобы ошибка одной задачи не меняла состояние другой (0 — загрузка каталога)
+        self.token = ("search", 0)          # текущий поиск
+        self.detail_token = ("detail", 0)   # текущая открытая карточка
         self.loaded, self.total, self.cursor, self.loading = [], 0, None, False
         self.pixmaps = OrderedDict()
-        self.requested = set()      # url превью, уже запрошенные
+        self.requested = set()      # url превью, которые скачиваются сейчас
+        self.failed = {}            # url -> время неудачи: повтор не раньше RETRY_SECONDS
+        self.wanted = set()         # url, которые отрисовка попросила догрузить
+        self.cancelled = set()      # url, отменённые очисткой кэша: их пустой ответ — не неудача
         self.library = {}
         self.jobs = {}              # путь ассета -> {"add": bool}
         self.query, self.mode = "", "Hybrid"
@@ -158,7 +164,7 @@ class BrowserWidget(QtWidgets.QWidget):
         if self.catalog is None:
             return
         self.query, self.mode = self.search.text().strip(), self.mode_box.currentText()
-        self.token += 1
+        self.token = ("search", self.token[1] + 1)
         self.loaded, self.total, self.cursor = [], 0, None
         self.model.set_cards([])
         self.detail.show_card(None)
@@ -220,13 +226,11 @@ class BrowserWidget(QtWidgets.QWidget):
     def open_card(self, card):
         if card is None:
             return
-        self.detail_token += 1
+        self.detail_token = ("detail", self.detail_token[1] + 1)
         self.detail.show_card(card, library.state(card, self.library))
-        poster = media.media_url(card, media.POSTER)
-        if poster in self.pixmaps:
-            self.detail.set_poster(self.pixmaps[poster])
-        else:
-            self._images([poster])
+        pixmap = self.tile_pixmap(media.media_url(card, media.POSTER))
+        if pixmap is not None:
+            self.detail.set_poster(pixmap)
         if not card.get("detailed"):
             tasks.details_async(self.events, self.detail_token, card, self.catalog)
         tasks.similar_async(self.events, self.detail_token, card, self.catalog)
@@ -243,10 +247,40 @@ class BrowserWidget(QtWidgets.QWidget):
                 tasks.video_async(self.events, url, PREVIEW_DIR)
 
     def _images(self, urls):
-        fresh = [u for u in urls if u not in self.requested]
+        """Скачать превью, которых нет на диске и которые не качаются сейчас (недавно неудачные — позже)."""
+        now = time.time()
+        fresh = [u for u in dict.fromkeys(urls) if u not in self.requested and now - self.failed.get(u, 0) > RETRY_SECONDS]
         self.requested.update(fresh)
         if fresh:
             tasks.images_async(self.events, fresh, PREVIEW_DIR)
+
+    def _store(self, url, pixmap):
+        self.pixmaps[url] = pixmap
+        self.pixmaps.move_to_end(url)
+        while len(self.pixmaps) > PIXMAP_LIMIT:
+            self.pixmaps.popitem(last=False)
+
+    def tile_pixmap(self, url):
+        """Превью для отрисовки: из памяти, иначе из дискового кэша, иначе просим скачать (вне paint)."""
+        pixmap = self.pixmaps.get(url)
+        if pixmap is not None:
+            self.pixmaps.move_to_end(url)
+            return pixmap
+        path = media.image_path(url, PREVIEW_DIR)
+        if os.path.isfile(path):
+            pixmap = QtGui.QPixmap(path)
+            if not pixmap.isNull():
+                self._store(url, pixmap)
+                return pixmap
+        if url not in self.requested and url not in self.wanted:
+            if not self.wanted:  # один отложенный вызов на пачку плиток одной перерисовки
+                QtCore.QTimer.singleShot(0, self._request_wanted)
+            self.wanted.add(url)
+        return None
+
+    def _request_wanted(self):
+        urls, self.wanted = list(self.wanted), set()
+        self._images(urls)
 
     # ------------------------------------------------------------ скачивание и сцена
 
@@ -307,8 +341,11 @@ class BrowserWidget(QtWidgets.QWidget):
 
     def clear_previews(self):
         tasks.cancel_pending_images()
+        self.cancelled |= self.requested
         self.pixmaps.clear()
         self.requested.clear()
+        self.failed.clear()
+        self.wanted.clear()
         tasks.previews_async(self.events, PREVIEW_DIR, PREVIEW_LIMIT_BYTES, clear=True)
 
     def _open(self, path):
@@ -350,12 +387,16 @@ class BrowserWidget(QtWidgets.QWidget):
         self.status("%s results%s" % (cat.format_count(total), "" if not self.cursor else " · %d loaded" % len(self.loaded)))
 
     def _on_image(self, _token, url, path):
-        if not path:
+        self.requested.discard(url)
+        pixmap = QtGui.QPixmap(path) if path else None
+        if pixmap is None or pixmap.isNull():
+            if url in self.cancelled:
+                self.cancelled.discard(url)
+            else:
+                self.failed[url] = time.time()
             return
-        pixmap = QtGui.QPixmap(path)
-        self.pixmaps[url] = pixmap
-        while len(self.pixmaps) > PIXMAP_LIMIT:
-            self.pixmaps.popitem(last=False)
+        self.failed.pop(url, None)
+        self._store(url, pixmap)
         card = self.detail.card
         if card is not None and url == media.media_url(card, media.POSTER):
             self.detail.set_poster(pixmap)
@@ -414,11 +455,20 @@ class BrowserWidget(QtWidgets.QWidget):
             self._add_node(job["card"], usd_path)
 
     def _on_error(self, token, text):
-        if isinstance(token, str):          # ошибка скачивания: token — путь ассета
+        """Ошибка фоновой задачи. Устаревшие (прошлый поиск, прошлая карточка) не трогают текущее состояние."""
+        if isinstance(token, str):                      # скачивание: token — путь ассета
             self.jobs.pop(token, None)
-        else:
+            card = self.detail.card
+            if card is not None and card["asset"]["path"] == token:
+                self.detail.set_progress(0, 0)
+            self.status("Download failed: " + text[:200])
+        elif token == self.token:                       # текущий поиск
             self.loading = False
-        self.status("Error: " + text[:200])
+            self.status("Search failed: " + text[:200])
+        elif token == self.detail_token:                # сведения о текущей карточке
+            self.status("Could not load details: " + text[:200])
+        elif token == 0 and self.catalog is None:       # каталог
+            self.status("Could not load the catalog: " + text[:200])
 
     def _on_previews(self, _token, cleared, bytes_left):
         if cleared:

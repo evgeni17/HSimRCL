@@ -157,6 +157,7 @@ class DetailPanel(QtWidgets.QWidget):
             return
         self.title.setText(card["title"] or card["filename"])
         self.facts.setText(facts_html(card))
+        self.set_similar([])  # похожие прошлой карточки не должны оставаться, пока не пришли новые
         self.set_state(state)
         clips = card.get("media") or {}
         self.spin.setVisible(self.video is not None and bool(clips.get(media.SPIN)))
