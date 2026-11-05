@@ -53,7 +53,9 @@ def run_case(name, query, mode, filename, tol):
     size, bottom = bbox_size(node)
     want = card.get("dims")  # x, y, z файла (Z-up) -> в сцене x, z, y
     problems = list(node.errors()) + [e for c in node.children() for e in c.errors()]
-    if want:
+    if not want:  # без эталона из каталога сравнивать не с чем — это не «успех»
+        problems.append("no catalog dimensions to compare with")
+    else:
         expect = [want[0], want[2], want[1]]
         problems += ["size %s != %s" % ([round(v, 3) for v in size], expect)
                      for _ in [0] if any(abs(a - b) > tol for a, b in zip(size, expect))]

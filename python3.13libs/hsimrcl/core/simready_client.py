@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Dead_wall
 # SPDX-FileCopyrightText: 2026 EOK (Houdini port: package-relative imports; HSimRCL: safe path segments,
-#   completion marker only with the root USD on disk — marked "HSimRCL:" below)
+#   completion marker only with the root USD on disk, a temporary file per writer — marked "HSimRCL:" below)
 # SPDX-License-Identifier: MIT
 # Upstream: https://github.com/denwerdan-arch/SimRCL simready_lib/simready_client.py @ 1150d3e
 """HTTP client for SimReady Central: search the index and download asset packages.
@@ -9,6 +9,7 @@ Standard library only and free of Cinema 4D imports, so it is safe to run in a w
 """
 import json
 import os
+import threading
 import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -226,14 +227,20 @@ def _download_file(url, target, expected_size, force=False):
     if not force and expected_size is not None and os.path.isfile(target) and os.path.getsize(target) == expected_size:
         return
     os.makedirs(os.path.dirname(target), exist_ok=True)
-    part = target + ".part"
-    with urllib.request.urlopen(_request(url), timeout=TIMEOUT_SECONDS) as resp, open(part, "wb") as out:
-        for chunk in iter(lambda: resp.read(CHUNK_BYTES), b""):
-            out.write(chunk)
-    if expected_size is not None and os.path.getsize(part) != expected_size:
-        os.remove(part)
-        raise IOError("Size mismatch for " + url)
-    os.replace(part, target)
+    # HSimRCL: свой временный файл у каждого писателя (процесс + поток). С общим "<file>.part" две загрузки
+    # одного пакета (две панели, два Houdini) обрезали бы друг другу файл; os.replace атомарен, последний
+    # писатель кладёт тот же проверенный по размеру файл.
+    part = "%s.%d-%d.part" % (target, os.getpid(), threading.get_ident())
+    try:
+        with urllib.request.urlopen(_request(url), timeout=TIMEOUT_SECONDS) as resp, open(part, "wb") as out:
+            for chunk in iter(lambda: resp.read(CHUNK_BYTES), b""):
+                out.write(chunk)
+        if expected_size is not None and os.path.getsize(part) != expected_size:
+            raise IOError("Size mismatch for " + url)
+        os.replace(part, target)
+    finally:
+        if os.path.exists(part):  # HSimRCL: обрыв или ошибка не оставляют временный файл
+            os.remove(part)
 
 
 def download_file(url, target):

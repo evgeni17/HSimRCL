@@ -165,6 +165,8 @@ class BrowserWidget(QtWidgets.QWidget):
             return
         self.query, self.mode = self.search.text().strip(), self.mode_box.currentText()
         self.token = ("search", self.token[1] + 1)
+        # карточка закрывается: её поздние ответы и ошибки больше не актуальны
+        self.detail_token = ("detail", self.detail_token[1] + 1)
         self.loaded, self.total, self.cursor = [], 0, None
         self.model.set_cards([])
         self.detail.show_card(None)
@@ -272,6 +274,7 @@ class BrowserWidget(QtWidgets.QWidget):
             if not pixmap.isNull():
                 self._store(url, pixmap)
                 return pixmap
+            _drop_broken(path)  # битый файл: fetch_image отдавал бы его снова и снова
         if url not in self.requested and url not in self.wanted:
             if not self.wanted:  # один отложенный вызов на пачку плиток одной перерисовки
                 QtCore.QTimer.singleShot(0, self._request_wanted)
@@ -320,7 +323,8 @@ class BrowserWidget(QtWidgets.QWidget):
         if card.get("license"):
             node.parm("license").set(card["license"])
         node.setCurrent(True, clear_all_selected=True)
-        self.status("Added %s" % node.path())
+        # нода намеренно не подключается и display не переносится: раскладку и цепочку собирает пользователь
+        self.status("Added %s — not connected: wire it into your LOP chain to see it" % node.path())
 
     def reveal(self):
         card = self.detail.card
@@ -390,6 +394,8 @@ class BrowserWidget(QtWidgets.QWidget):
         self.requested.discard(url)
         pixmap = QtGui.QPixmap(path) if path else None
         if pixmap is None or pixmap.isNull():
+            if path:
+                _drop_broken(path)  # скачался нечитаемый файл — убрать, чтобы следующий повтор скачал заново
             if url in self.cancelled:
                 self.cancelled.discard(url)
             else:
@@ -473,6 +479,14 @@ class BrowserWidget(QtWidgets.QWidget):
     def _on_previews(self, _token, cleared, bytes_left):
         if cleared:
             self.status("Preview cache cleared")
+
+
+def _drop_broken(path):
+    """Удалить нечитаемое превью из кэша (только файл кэша превью, который мы сами и скачали)."""
+    try:
+        os.remove(path)
+    except OSError:
+        pass
 
 
 def _target_network(hou):

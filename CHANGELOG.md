@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.1.0-dev.4
+
+Fixes from the re-check report of 0.1.0-dev.3:
+
+- **Concurrent downloads of one package** (two panels, two Houdini sessions) no longer break each other: every
+  writer has its own temporary file (core, marked "HSimRCL:"); an interrupted or failed file leaves no `.part`.
+  The old shared `<file>.part` failed in 5 of 5 runs of the new concurrency test.
+- Browser: an unreadable preview in the disk cache is deleted and downloaded again (after the retry pause)
+  instead of being served forever.
+- Browser: a new search invalidates the closed asset card, so its late error no longer replaces the search status.
+- Add to Stage says in the status line, tooltip, panel help and README that the node is not connected and the
+  display flag is not moved.
+- Tests: `panel_smoke.py` now requires the finished current search, the received details (not just the title),
+  decodable tile and poster of the opened asset and a saved snapshot; `houdini_regression.py` fails when the
+  catalog has no reference size. New `download_cycle.py` (temporary library: from scratch, interruption, network
+  failure and retry, Download Again, two concurrent downloads, import) and `hip_roundtrip.py` (save and reopen the
+  HIP in a second process, flattened USD export; compares sizes, positions, joints, materials, root xformOps and
+  node parameters, with a negative self-check done by hand).
+
 ## 0.1.0-dev.3
 
 Fixes from the external test report of 0.1.0-dev.2:

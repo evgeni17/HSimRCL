@@ -43,7 +43,9 @@ More: [What is SimReady (NVIDIA)](https://www.nvidia.com/en-us/glossary/simready
 
 - **SimReady Browser** panel (shelf *HSimRCL → SimReady Browser*, or any pane's tab menu): search with match
   percentages, filters by category, provider, licence, profile, mass, bodies and size, previews with 360° and
-  moving-parts clips, Download and **Add to Stage** (or double-click a tile).
+  moving-parts clips, Download and **Add to Stage** (or double-click a tile). Add to Stage creates the node in the
+  LOP network open in the Network Editor (else `/stage`) without connecting it or moving the display flag —
+  wire it into your chain.
 - **SimReady Asset** LOP (`hsimrcl::simready_asset::1.0`): search the catalog, download a package, reference its
   root USD under `/simready/<name>`.
 - The asset stays a USD reference: physics, joints, colliders, semantics and UsdPreviewSurface materials are kept

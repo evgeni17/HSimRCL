@@ -8,6 +8,7 @@
 import os
 import sys
 import time
+import types
 
 from PySide6 import QtGui, QtWidgets
 
@@ -84,6 +85,36 @@ def test_reload_from_disk(w):
         os.remove(path)
 
 
+def test_broken_preview(w):
+    """Нечитаемый файл в кэше удаляется, и превью снова запрашивается (раньше вечно отдавался тот же файл)."""
+    url = "https://example.invalid/tile_broken.jpg"
+    path = media.image_path(url, browser.PREVIEW_DIR)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "wb") as handle:
+        handle.write(b"not an image")
+    w.pixmaps.pop(url, None)
+    w.failed.pop(url, None)
+    check("broken file gives no pixmap", w.tile_pixmap(url), None)
+    check("broken file removed while drawing", os.path.exists(path), False)
+    check("broken file asked again", url in w.wanted, True)
+    with open(path, "wb") as handle:
+        handle.write(b"still not an image")
+    w._on_image(0, url, path)
+    check("broken download removed", os.path.exists(path), False)
+    check("broken download paused", url in w.failed, True)
+
+
+def test_closed_card_error(w):
+    """Новый поиск закрывает карточку: её поздняя ошибка не меняет статус поиска."""
+    w.catalog = types.SimpleNamespace(stats={}, nodes={})
+    w.open_card(card("closing"))
+    old = w.detail_token
+    w.new_search()
+    w.status("Searching…")
+    w._on_error(old, "late details failure")
+    check("closed card error ignored", w.status_label.text(), "Searching…")
+
+
 def test_similar_cleared(w):
     w.catalog = object()
     w.detail.show_card(card("first"))
@@ -94,7 +125,8 @@ def test_similar_cleared(w):
 
 if __name__ == "__main__":
     widget = browser.create()
-    for fn in (test_stale_errors, test_image_retry, test_reload_from_disk, test_similar_cleared):
+    for fn in (test_stale_errors, test_image_retry, test_reload_from_disk, test_broken_preview,
+               test_closed_card_error, test_similar_cleared):
         fn(widget)
     print("panel_logic: %s" % ("OK" if not FAILS else "FAILED " + ", ".join(FAILS)))
     sys.exit(1 if FAILS else 0)

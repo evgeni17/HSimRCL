@@ -9,6 +9,8 @@ def onCreateInterface():
 ]]></script>
     <includeInPaneTabMenu menu_position="310" create_separator="false"/>
     <includeInToolbarMenu menu_position="310" create_separator="false"/>
-    <help><![CDATA[Find, preview, download and add NVIDIA SimReady Central assets (HSimRCL).]]></help>
+    <help><![CDATA[Find, preview, download and add NVIDIA SimReady Central assets (HSimRCL).
+Add to Stage (or double-click) creates a SimReady Asset node in the LOP network open in the Network Editor,
+else in /stage. The node is not connected and the display flag is not moved: wire it into your chain.]]></help>
   </interface>
 </pythonPanelDocument>

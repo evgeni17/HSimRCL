@@ -76,7 +76,9 @@ class DetailPanel(QtWidgets.QWidget):
         self.facts.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.download_button = QtWidgets.QPushButton("Download")
         self.add_button = QtWidgets.QPushButton("Add to Stage")
-        self.add_button.setToolTip("Download if needed and add a SimReady Asset node to the current LOP network")
+        self.add_button.setToolTip("Download if needed and add a SimReady Asset node to the LOP network open in the "
+                                   "Network Editor (else /stage). The node is not connected and the display flag "
+                                   "is not moved: wire it into your chain.")
         self.reveal_button = QtWidgets.QPushButton("Reveal")
         self.download_button.clicked.connect(self.download)
         self.add_button.clicked.connect(self.add)
