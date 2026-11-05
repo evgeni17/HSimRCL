@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.1.0-dev.2
+
+- **SimReady Browser** — a Python Panel (pane tab or floating window; shelf tool *SimReady Browser*), the Houdini
+  counterpart of the SimRCL window: search (Hybrid / Keyword / Text) with the catalog's match percentages,
+  filters (categories, providers, licence, profile, mass, bodies, size per axis) with removable chips, sorting,
+  a grid of previews with a size slider and endless scrolling, asset details with the 360° and moving-parts
+  clips, similar assets, Download / Add to Stage / Reveal. Double-click a tile to add it to the stage.
+- Add to Stage creates a SimReady Asset node in the LOP network open in the Network Editor (else `/stage`),
+  downloading the package first when needed; the node is not moved.
+- Previews and the download folder are shared with SimRCL (`~/Documents/SRC by Deadwall`).
+- Clips are drawn through `QVideoSink` into a plain label: `QVideoWidget` paints a native surface that does not
+  show in Houdini pane captures.
+- `tests/panel_smoke.py` (hython, offscreen): catalog, search, previews, details, similar.
+
 ## 0.1.0-dev.1
 
 - Repository layout by the plugin rules (development / installed copy, `deploy.py`, `VERSIONS.json`).

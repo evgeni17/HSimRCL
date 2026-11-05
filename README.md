@@ -20,6 +20,9 @@ and his notes for porting (`AGENTS.md`) made this Houdini version possible.
 
 ## What it does
 
+- **SimReady Browser** panel (shelf *HSimRCL → SimReady Browser*, or any pane's tab menu): search with match
+  percentages, filters by category, provider, licence, profile, mass, bodies and size, previews with 360° and
+  moving-parts clips, Download and **Add to Stage** (or double-click a tile).
 - **SimReady Asset** LOP (`hsimrcl::simready_asset::1.0`): search the catalog, download a package, reference its
   root USD under `/simready/<name>`.
 - The asset stays a USD reference: physics, joints, colliders, semantics and UsdPreviewSurface materials are kept

@@ -35,3 +35,5 @@ Node type names are written only through constants in `hsimrcl/__init__.py`.
 ## Tests
 
 `python3 tests/test_core.py` and `python3 tests/test_repo.py` run without Houdini.
+In Houdini's Python: `hython tests/houdini_regression.py` (asset sizes against the catalog) and
+`QT_QPA_PLATFORM=offscreen hython tests/panel_smoke.py <out.png> [query]` (browser panel without a window).

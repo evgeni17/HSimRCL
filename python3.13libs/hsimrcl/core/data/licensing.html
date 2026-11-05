@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SimRS by Dead_wall - Licensing guide</title>
+<style>
+  :root { --bg:#000; --card:#161616; --line:#2a2a2a; --text:#f2f2f2; --muted:#a8a8a8; --accent:#ffa200; --ok:#5fd38d; }
+  @media (prefers-color-scheme: light) {
+    :root { --bg:#fafafa; --card:#fff; --line:#dcdcdc; --text:#161616; --muted:#5c5c5c; --accent:#b36b00; --ok:#1a7f45; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.55 "Segoe UI", system-ui, sans-serif; }
+  main { max-width:760px; margin:0 auto; padding:32px 16px 64px; }
+  header { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:24px; }
+  h1 { font-size:22px; margin:0; }
+  h1 span { color:var(--muted); font-weight:400; }
+  h2 { font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); margin:32px 0 10px; }
+  .lang button { background:none; color:var(--muted); border:1px solid var(--line); padding:6px 14px; cursor:pointer; font:inherit; }
+  .lang button[aria-pressed="true"] { color:var(--text); border-color:var(--accent); }
+  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); }
+  th, td { text-align:left; vertical-align:top; padding:10px 12px; border-bottom:1px solid var(--line); }
+  th { color:var(--muted); font-weight:600; font-size:13px; }
+  tr:last-child td { border-bottom:0; }
+  code { background:var(--card); border:1px solid var(--line); padding:1px 5px; }
+  pre { background:var(--card); border:1px solid var(--line); padding:12px; white-space:pre-wrap; margin:8px 0; }
+  .ok { color:var(--ok); } .warn { color:var(--accent); }
+  .note { color:var(--muted); font-size:13px; margin-top:32px; }
+  [lang-block] { display:none; }
+  html[lang="en"] [lang-block="en"], html[lang="ru"] [lang-block="ru"] { display:block; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>SimRS <span>by Dead_wall</span> &middot; Licensing / Лицензии</h1>
+    <div class="lang" role="group" aria-label="Language">
+      <button data-lang="en" aria-pressed="true">EN</button>
+      <button data-lang="ru" aria-pressed="false">RU</button>
+    </div>
+  </header>
+
+  <section lang-block="en">
+    <h2>The one rule</h2>
+    <p>Every asset has its own licence. Check it before you use a model: it is shown in the plugin under <code>DETAILS &rarr; License</code>, and you can filter the catalogue by licence in the left panel. A licence that is not on the plugin's list of permissive licences is shown in orange.</p>
+
+    <h2>What the licences mean</h2>
+    <table>
+      <tr><th>Licence</th><th>You may</th><th>You must</th></tr>
+      <tr><td><b>CC-BY 4.0</b><br>(almost all assets)</td>
+          <td class="ok">Use commercially, in client work and renders; modify; convert; redistribute.</td>
+          <td>Give credit (author, licence name and link), and say if you changed the model.</td></tr>
+      <tr><td><b>Apache-2.0</b>, <b>BSD-3-Clause</b><br>(a few assets)</td>
+          <td class="ok">Use commercially; modify; redistribute.</td>
+          <td>Keep the copyright and licence notice; do not use the author's name or trademarks to promote your work.</td></tr>
+      <tr><td><b>Anything else, combined or empty</b></td>
+          <td class="warn">Unknown until you read it. Some licences forbid commercial use.</td>
+          <td>Open the asset's dataset page on Hugging Face and read the licence file before client work.</td></tr>
+    </table>
+
+    <h2>Practical cases</h2>
+    <p><b>Renders, video, client projects.</b> Allowed under CC-BY 4.0. Put a credit line in the credits, description or project notes (a credit inside the image is not required).</p>
+    <p><b>Selling or sharing the model itself.</b> CC-BY allows it with credit and the licence kept, but you cannot present the model as your own work or add terms that restrict others.</p>
+    <p><b>Real products and logos.</b> The licence covers copyright only. Brand names, logos and the look of real products (robot makers, appliances) can still be trademarks: do not suggest the manufacturer endorses your work.</p>
+    <p><b>Textures.</b> Keep the textures and materials that come with the package; they carry the same licence.</p>
+
+    <h2>Credit line template</h2>
+<pre>3D model: "&lt;title&gt;" (&lt;file name&gt;) by &lt;source shown in DETAILS&gt;, NVIDIA SimReady Central.
+Licence: CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/
+Changes: converted to Cinema 4D / Redshift materials.</pre>
+
+    <p class="note">General information, not legal advice. For paid projects with strict legal review, keep the asset name, source and licence in your project notes.</p>
+  </section>
+
+  <section lang-block="ru">
+    <h2>Главное правило</h2>
+    <p>У каждого ассета своя лицензия. Проверяйте её до использования модели: она показана в плагине в разделе <code>DETAILS &rarr; License</code>, а в левой панели каталог можно отфильтровать по лицензии. Лицензия, которой нет в списке свободных лицензий плагина, подсвечивается оранжевым.</p>
+
+    <h2>Что означают лицензии</h2>
+    <table>
+      <tr><th>Лицензия</th><th>Можно</th><th>Нужно</th></tr>
+      <tr><td><b>CC-BY 4.0</b><br>(почти все ассеты)</td>
+          <td class="ok">Использовать в коммерческих проектах и рендерах для заказчиков; изменять; конвертировать; распространять.</td>
+          <td>Указать авторство (автор, название лицензии и ссылка) и отметить, если вы изменили модель.</td></tr>
+      <tr><td><b>Apache-2.0</b>, <b>BSD-3-Clause</b><br>(несколько ассетов)</td>
+          <td class="ok">Использовать коммерчески; изменять; распространять.</td>
+          <td>Сохранить уведомление об авторских правах и лицензии; не использовать имя автора и товарные знаки для продвижения своей работы.</td></tr>
+      <tr><td><b>Любая другая, составная или пустая</b></td>
+          <td class="warn">Заранее неизвестно. Некоторые лицензии запрещают коммерческое использование.</td>
+          <td>Откройте страницу датасета ассета на Hugging Face и прочитайте файл лицензии до работы на заказчика.</td></tr>
+    </table>
+
+    <h2>Типовые случаи</h2>
+    <p><b>Рендеры, видео, проекты для заказчиков.</b> Разрешено по CC-BY 4.0. Укажите авторство в титрах, описании или заметках проекта (надпись прямо на изображении не требуется).</p>
+    <p><b>Продажа или передача самой модели.</b> CC-BY это допускает при указании авторства и сохранении лицензии, но нельзя выдавать модель за свою и добавлять условия, ограничивающие других.</p>
+    <p><b>Реальные продукты и логотипы.</b> Лицензия охватывает только авторское право. Названия брендов, логотипы и вид реальных изделий (роботы, бытовая техника) могут быть товарными знаками: не создавайте впечатление, что производитель одобряет вашу работу.</p>
+    <p><b>Текстуры.</b> Оставляйте текстуры и материалы из пакета: на них распространяется та же лицензия.</p>
+
+    <h2>Шаблон строки авторства</h2>
+<pre>3D-модель: "&lt;название&gt;" (&lt;имя файла&gt;), автор: &lt;источник из DETAILS&gt;, NVIDIA SimReady Central.
+Лицензия: CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/
+Изменения: конвертирована в Cinema 4D / материалы Redshift.</pre>
+
+    <p class="note">Справочная информация, не юридическая консультация. Для платных проектов с юридической проверкой храните название ассета, источник и лицензию в заметках проекта.</p>
+  </section>
+</main>
+
+<script>
+  var buttons = document.querySelectorAll("[data-lang]");
+
+  function setLanguage(lang) {
+    document.documentElement.lang = lang;
+    buttons.forEach(function (button) {
+      button.setAttribute("aria-pressed", String(button.dataset.lang === lang));
+    });
+  }
+
+  buttons.forEach(function (button) {
+    button.addEventListener("click", function () { setLanguage(button.dataset.lang); });
+  });
+  setLanguage((navigator.language || "en").toLowerCase().indexOf("ru") === 0 ? "ru" : "en");
+</script>
+</body>
+</html>

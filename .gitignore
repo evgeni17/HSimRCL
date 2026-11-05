@@ -12,3 +12,6 @@ backup/
 *.hiplc
 *.hipnc
 dist/
+# таблицы PLY/pycparser, которые пишет hython в текущую папку
+lextab.py
+yacctab.py

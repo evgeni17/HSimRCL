@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pythonPanelDocument>
+  <!-- HSimRCL: браузер SimReady Central; код — hsimrcl.panel.browser -->
+  <interface name="hsimrcl_browser" label="SimReady Browser" icon="LOP_reference" showNetworkNavigationBar="false" help_url="">
+    <script><![CDATA[
+def onCreateInterface():
+    import hsimrcl.panel.browser as browser
+    return browser.create()
+]]></script>
+    <includeInPaneTabMenu menu_position="310" create_separator="false"/>
+    <includeInToolbarMenu menu_position="310" create_separator="false"/>
+    <help><![CDATA[Find, preview, download and add NVIDIA SimReady Central assets (HSimRCL).]]></help>
+  </interface>
+</pythonPanelDocument>
