@@ -46,12 +46,15 @@ def main():
     check("type names only via constants", not offenders, offenders)
     no_spdx = [p for p in own_py_files() if "SPDX-License-Identifier" not in open(p, encoding="utf-8").read(400)]
     check("SPDX headers", not no_spdx, no_spdx)
-    for name in ("README.md", "README.ru.md", "CHANGELOG.md", "CONTRIBUTING.md", "docs/PLAN.ru.md",
+    for name in ("README.md", "README.ru.md", "CHANGELOG.md", "docs/hsimrcl_banner.png", "CONTRIBUTING.md", "docs/PLAN.ru.md",
                  "LICENSE", "NOTICE", "third_party/SimRCL-LICENSE.txt"):
         check("exists " + name, os.path.isfile(os.path.join(ROOT, name)))
     for name in ("README.md", "README.ru.md"):
         text = open(os.path.join(ROOT, name), encoding="utf-8").read()
         check(name + " credits SimRCL", all(link in text for link in CREDIT_LINKS))
+        # баннер сразу после заголовка — правило плагинов, не терять при правках README
+        lines = [line for line in text.splitlines() if line.strip()]
+        check(name + " banner after title", len(lines) > 1 and lines[1] == "![HSimRCL](docs/hsimrcl_banner.png)")
     changelog = open(os.path.join(ROOT, "CHANGELOG.md"), encoding="utf-8").read()
     pretty = re.sub(r"\.dev(\d+)$", r"-dev.\1", version)
     check("CHANGELOG has " + pretty, ("## " + pretty) in changelog)

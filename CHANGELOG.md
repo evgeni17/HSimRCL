@@ -12,6 +12,7 @@
 - Previews and the download folder are shared with SimRCL (`~/Documents/SRC by Deadwall`).
 - Clips are drawn through `QVideoSink` into a plain label: `QVideoWidget` paints a native surface that does not
   show in Houdini pane captures.
+- Banner `docs/hsimrcl_banner.png` at the top of both READMEs (checked by `test_repo.py`).
 - README EN/RU: «About SimReady» — Omniverse / Isaac Sim context and links.
 - `tests/panel_smoke.py` (hython, offscreen): catalog, search, previews, details, similar.
 

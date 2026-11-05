@@ -1,5 +1,7 @@
 # HSimRCL — SimReady Central for Houdini
 
+![HSimRCL](docs/hsimrcl_banner.png)
+
 [Русская версия](README.ru.md)
 
 Find, download and reference [NVIDIA SimReady Central](https://docs.omniverse.nvidia.com/simready/latest/simready-central.html)

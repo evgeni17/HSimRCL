@@ -21,6 +21,11 @@ If the node interface or help changed, rebuild the assets **after** installing (
 3. `import hsimrcl.hda_build as b; b.build_all(otls="<repo>/otls")`
 4. `python3 deploy.py ~/tools_houdini/HSimRCL` again, then `hou.hda.reloadFile(...)`
 
+## README
+
+Both READMEs (EN and RU) keep the banner `docs/hsimrcl_banner.png` right after the title, and the credits to
+Dead_wall with links to SimRCL and its video; `tests/test_repo.py` checks both.
+
 ## SimRCL core
 
 `python3.13libs/hsimrcl/core/simready_*.py` are SimRCL files with minimal, header-marked changes
