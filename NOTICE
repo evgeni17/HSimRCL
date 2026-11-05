@@ -1,0 +1,18 @@
+HSimRCL — NVIDIA SimReady Central assets in SideFX Houdini (Solaris)
+Copyright 2026 EOK (https://github.com/evgeni17) and HSimRCL contributors
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE),
+except the files in python3.13libs/hsimrcl/core/simready_*.py and
+python3.13libs/hsimrcl/core/data/, which come from SimRCL by Dead_wall
+(https://github.com/denwerdan-arch/SimRCL) under the MIT License
+(see third_party/SimRCL-LICENSE.txt) with small changes marked in their headers.
+
+HSimRCL is an independent project. It is not affiliated with, endorsed or
+sponsored by NVIDIA, SideFX (Side Effects Software Inc.), Hugging Face or Maxon.
+"Houdini" and "SideFX" are trademarks of Side Effects Software Inc.
+"NVIDIA", "Omniverse" and "SimReady" are trademarks of NVIDIA Corporation.
+All other trademarks are the property of their respective owners and are used
+here for identification purposes only.
+
+Assets downloaded with HSimRCL are not part of this product; each carries its
+own licence set by its author.

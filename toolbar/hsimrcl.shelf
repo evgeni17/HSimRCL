@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shelfDocument>
+  <toolshelf name="hsimrcl" label="HSimRCL">
+    <memberTool name="hsimrcl_simready_asset"/>
+  </toolshelf>
+  <tool name="hsimrcl_simready_asset" label="SimReady Asset" icon="LOP_reference">
+    <script scriptType="python"><![CDATA[import hou
+import hsimrcl
+stage = hou.node("/stage")
+node = stage.createNode(hsimrcl.ASSET_TYPE)
+node.setSelected(True, clear_all_selected=True)
+]]></script>
+  </tool>
+</shelfDocument>

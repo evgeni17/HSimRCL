@@ -1,0 +1,14 @@
+vendor/*
+!vendor/README.md
+tests/out/
+tests/private/
+*.png
+!docs/*.png
+__pycache__/
+*.pyc
+.DS_Store
+backup/
+*.hip
+*.hiplc
+*.hipnc
+dist/

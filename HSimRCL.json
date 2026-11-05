@@ -1,0 +1,8 @@
+{
+    "enable": true,
+    "load_package_once": true,
+    "env": [
+        {"HSIMRCL": "/path/to/HSimRCL"}
+    ],
+    "path": "$HSIMRCL"
+}
