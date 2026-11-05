@@ -9,6 +9,8 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PKG = os.path.join(ROOT, "python3.13libs", "hsimrcl")
 FAILS = []
+# благодарность автору SimRCL обязательна в обоих README (решение в docs/PLAN.ru.md)
+CREDIT_LINKS = ("https://github.com/denwerdan-arch/SimRCL", "https://www.youtube.com/watch?v=xmf307dYwqM")
 
 
 def check(label, ok, detail=""):
@@ -47,6 +49,9 @@ def main():
     for name in ("README.md", "README.ru.md", "CHANGELOG.md", "CONTRIBUTING.md", "docs/PLAN.ru.md",
                  "LICENSE", "NOTICE", "third_party/SimRCL-LICENSE.txt"):
         check("exists " + name, os.path.isfile(os.path.join(ROOT, name)))
+    for name in ("README.md", "README.ru.md"):
+        text = open(os.path.join(ROOT, name), encoding="utf-8").read()
+        check(name + " credits SimRCL", all(link in text for link in CREDIT_LINKS))
     changelog = open(os.path.join(ROOT, "CHANGELOG.md"), encoding="utf-8").read()
     pretty = re.sub(r"\.dev(\d+)$", r"-dev.\1", version)
     check("CHANGELOG has " + pretty, ("## " + pretty) in changelog)

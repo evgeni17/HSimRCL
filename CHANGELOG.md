@@ -8,6 +8,7 @@
 - `hsimrcl::simready_asset::1.0` LOP: Search / Download / Reveal Files, USD reference under `/simready/<name>`,
   Z-up → Y-up rotation and unit scale as xformOps, licence in the prim's customData.
 - Shelf `HSimRCL`, help page EN + RU.
+- README EN/RU: credits to Dead_wall with links to SimRCL and its video overview.
 - HTTPS inside Houdini on macOS: its Python has no root certificates; `hsimrcl.net` installs a certifi
   context only when the default one has none (verification stays on).
 - Up-axis/units correction is prepended to the asset root's own xformOps instead of replacing them.

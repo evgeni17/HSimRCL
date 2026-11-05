@@ -6,6 +6,15 @@ Find, download and reference [NVIDIA SimReady Central](https://docs.omniverse.nv
 assets in Houdini Solaris. A port of [SimRCL](https://github.com/denwerdan-arch/SimRCL) by Dead_wall (Cinema 4D):
 its portable core (catalog search, downloads, local library) is reused; the Houdini side is new.
 
+## Credits
+
+Huge thanks to **Dead_wall**, the author of [SimRCL](https://github.com/denwerdan-arch/SimRCL) — the SimReady Central
+browser for Cinema 4D. HSimRCL stands on his work: the catalog search, downloads and local library are his code,
+and his notes for porting (`AGENTS.md`) made this Houdini version possible.
+
+- Original plugin for Cinema 4D: https://github.com/denwerdan-arch/SimRCL
+- Video overview of how SimRCL works: https://www.youtube.com/watch?v=xmf307dYwqM
+
 > Status: **0.1.0 in development** — nodes of the development version can change between builds; do not rely on
 > them in production scenes yet.
 

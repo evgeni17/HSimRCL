@@ -6,6 +6,15 @@
 в Houdini Solaris. Порт [SimRCL](https://github.com/denwerdan-arch/SimRCL) автора Dead_wall (Cinema 4D):
 его переносимое ядро (поиск в каталоге, скачивание, локальная библиотека) используется как есть, Houdini-часть — новая.
 
+## Благодарность
+
+Огромное спасибо **Dead_wall** — автору [SimRCL](https://github.com/denwerdan-arch/SimRCL), браузера SimReady Central
+для Cinema 4D. HSimRCL построен на его работе: поиск в каталоге, скачивание и локальная библиотека — его код, а его
+заметки для переноса (`AGENTS.md`) сделали версию для Houdini возможной.
+
+- Оригинальный плагин для Cinema 4D: https://github.com/denwerdan-arch/SimRCL
+- Видео о том, как работает SimRCL: https://www.youtube.com/watch?v=xmf307dYwqM
+
 > Состояние: **0.1.0 в разработке** — ноды разрабатываемой версии могут меняться от сборки к сборке, в рабочих
 > сценах на них пока полагаться нельзя.
 
