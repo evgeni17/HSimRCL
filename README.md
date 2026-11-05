@@ -18,6 +18,25 @@ and his notes for porting (`AGENTS.md`) made this Houdini version possible.
 > Status: **0.1.0 in development** — nodes of the development version can change between builds; do not rely on
 > them in production scenes yet.
 
+## About SimReady
+
+SimReady is NVIDIA's OpenUSD-based standard for simulation-ready 3D assets, introduced for
+[NVIDIA Omniverse](https://www.nvidia.com/en-us/omniverse/) at GTC 2022. A SimReady asset carries more than geometry:
+mass, friction and collision shapes, articulated joints with limits, semantic labels for AI training and physical
+materials for sensor simulation. Omniverse libraries convert and validate assets; Isaac Sim and Isaac Lab are the
+reference runtimes. They are used for robotics, digital twins of factories and warehouses, synthetic data and
+autonomous-vehicle testing.
+
+In October 2026 NVIDIA opened [SimReady Central](https://docs.omniverse.nvidia.com/simready/latest/simready-central.html) —
+a free library of 2000+ SimReady assets on Hugging Face, published by NVIDIA and by manufacturers.
+
+HSimRCL references these assets as USD, so everything Omniverse and Isaac Sim rely on (UsdPhysics joints, rigid
+bodies, colliders, semantics, physics variants for PhysX / MuJoCo / Newton) stays in the Solaris stage.
+
+More: [What is SimReady (NVIDIA)](https://www.nvidia.com/en-us/glossary/simready/) ·
+[SimReady announcement, GTC 2022](https://developer.nvidia.com/blog/new-cloud-applications-simready-assets-and-tools-for-omniverse-developers-announced-at-gtc) ·
+[nvidia/simready-catalog on Hugging Face](https://huggingface.co/datasets/nvidia/simready-catalog)
+
 ## What it does
 
 - **SimReady Browser** panel (shelf *HSimRCL → SimReady Browser*, or any pane's tab menu): search with match

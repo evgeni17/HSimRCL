@@ -18,6 +18,25 @@
 > Состояние: **0.1.0 в разработке** — ноды разрабатываемой версии могут меняться от сборки к сборке, в рабочих
 > сценах на них пока полагаться нельзя.
 
+## О SimReady
+
+SimReady — стандарт NVIDIA для 3D-ассетов, готовых к симуляции, на основе OpenUSD; представлен для
+[NVIDIA Omniverse](https://www.nvidia.com/en-us/omniverse/) на GTC 2022. В ассете SimReady кроме геометрии есть
+масса, трение и коллизии, суставы с пределами движения, семантические метки для обучения ИИ и физические материалы
+для симуляции датчиков. Библиотеки Omniverse переводят и проверяют ассеты, эталонная среда запуска — Isaac Sim и
+Isaac Lab. Применяются в робототехнике, цифровых двойниках заводов и складов, генерации синтетических данных и
+проверке беспилотников.
+
+В октябре 2026 года NVIDIA открыла [SimReady Central](https://docs.omniverse.nvidia.com/simready/latest/simready-central.html) —
+бесплатную библиотеку из 2000+ ассетов SimReady на Hugging Face, которую пополняют NVIDIA и производители.
+
+HSimRCL подключает эти ассеты как USD, поэтому всё, на что опираются Omniverse и Isaac Sim (суставы UsdPhysics,
+твёрдые тела, коллизии, семантика, физические варианты для PhysX / MuJoCo / Newton), остаётся в сцене Solaris.
+
+Подробнее: [Что такое SimReady (NVIDIA)](https://www.nvidia.com/en-us/glossary/simready/) ·
+[анонс SimReady, GTC 2022](https://developer.nvidia.com/blog/new-cloud-applications-simready-assets-and-tools-for-omniverse-developers-announced-at-gtc) ·
+[nvidia/simready-catalog на Hugging Face](https://huggingface.co/datasets/nvidia/simready-catalog)
+
 ## Что делает
 
 - Панель **SimReady Browser** (полка *HSimRCL → SimReady Browser* или меню вкладок любой панели): поиск с процентом
